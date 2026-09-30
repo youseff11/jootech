@@ -405,16 +405,22 @@ a.d-stat:hover { border-color: rgba(109, 111, 245, 0.45); transform: translateY(
   background: radial-gradient(closest-side, rgba(99, 102, 241, 0.25), transparent), var(--d-bg); overflow: hidden;
 }
 .d-portrait__ring {
-  position: absolute; inset: 8% 6% 10%; border-radius: 50%;
-  background: conic-gradient(from 0deg, #22d3ee, #6366f1, #d946ef, transparent 60%, #22d3ee);
+  position: absolute; inset: 4% 2% 6%; border-radius: 50%; overflow: hidden;
   mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1px));
-  animation: d-spin 14s linear infinite; opacity: 0.8;
+  opacity: 0.8;
+}
+.d-portrait__ring::before {
+  content: ''; position: absolute; inset: -50%;
+  background: conic-gradient(from 0deg, #22d3ee, #6366f1, #d946ef, transparent 60%, #22d3ee);
+  animation: d-spin 14s linear infinite;
+}
+.d-portrait__clip {
+  position: absolute; inset: calc(4% + 2px) calc(2% + 2px) calc(6% + 2px);
+  border-radius: 50%; overflow: hidden; isolation: isolate;
 }
 .d-portrait img {
   position: relative; width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s, filter 0.3s;
-  mask-image: radial-gradient(ellipse 60% 62% at 50% 45%, #000 58%, transparent 100%);
-  -webkit-mask-image: radial-gradient(ellipse 60% 62% at 50% 45%, #000 58%, transparent 100%);
 }
 .d-portrait img.is-busy { opacity: 0.55; filter: blur(2px); }
 .d-portrait__progress { position: absolute; inset: auto 20% 12%; display: grid; gap: 8px; text-align: center; }

@@ -100,7 +100,9 @@ export default function Settings() {
             {hero === undefined ? (
               <Spinner size={26} />
             ) : (
-              <img key={shown} src={shown} alt="صورتك الحالية" className={busy ? 'is-busy' : ''} />
+              <div className="d-portrait__clip">
+                <img key={shown} src={shown} alt="صورتك الحالية" className={busy ? 'is-busy' : ''} />
+              </div>
             )}
             {busy && (
               <span className="d-portrait__progress">

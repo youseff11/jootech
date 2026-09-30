@@ -65,7 +65,8 @@ function Portrait({ hero, ready }) {
     <div className="portrait" ref={ref} onClick={onSecretTap}>
       <div className="portrait__ring" aria-hidden="true" />
       <div className="portrait__ring portrait__ring--2" aria-hidden="true" />
-      {decided &&
+      <div className="portrait__clip">
+        {decided &&
         (hero?.src ? (
           <img
             key={hero.src}
@@ -85,6 +86,7 @@ function Portrait({ hero, ready }) {
             <img src={heroWebp} alt={`${profile.name} — ${profile.role}`} width="527" height="582" fetchPriority="high" decoding="async" />
           </picture>
         ))}
+      </div>
       <span className="chip-float chip-float--a">
         <Icon name="code" size={16} /> Django
       </span>
