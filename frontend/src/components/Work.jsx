@@ -18,12 +18,12 @@ function ProjectCard({ p, index }) {
         />
       </div>
 
-      <Link to={url} className="card__body" aria-label={`Open case study: ${p.title}`}>
+      <div className="card__body">
         <div className="card__meta">
           <span className="card__num">{String(index + 1).padStart(2, '0')}</span>
           {p.year && <span className="mono">{p.year}</span>}
         </div>
-        <h3 dir="auto">{p.title}</h3>
+        <h3 dir="auto"><Link to={url}>{p.title}</Link></h3>
         <p dir="auto">{p.summary}</p>
         <div className="card__foot">
           {p.tech.length > 0 ? (
@@ -36,11 +36,22 @@ function ProjectCard({ p, index }) {
           ) : (
             <span />
           )}
-          <span className="card__go" aria-hidden="true">
-            <Icon name="arrowUpRight" size={18} />
-          </span>
         </div>
-      </Link>
+        <div className="card__actions">
+          {p.live_url ? (
+            <a className="btn btn--primary" href={p.live_url} target="_blank" rel="noopener noreferrer" aria-label={`Preview website: ${p.title}`}>
+              Live preview <Icon name="arrowUpRight" size={16} />
+            </a>
+          ) : (
+            <button className="btn btn--ghost" type="button" disabled title="This project has no live website URL">
+              Preview unavailable <Icon name="globe" size={16} />
+            </button>
+          )}
+          <Link to={url} className="btn btn--ghost" aria-label={`View details: ${p.title}`}>
+            View details <Icon name="arrowRight" size={16} />
+          </Link>
+        </div>
+      </div>
     </article>
   )
 }

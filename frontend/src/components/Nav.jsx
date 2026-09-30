@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, navigate } from '../lib/router'
 import { profile } from '../data/site'
 import Icon from './Icon'
@@ -52,7 +53,10 @@ export default function Nav({ path }) {
     document.body.style.overflow = open ? 'hidden' : ''
     const onKey = (e) => e.key === 'Escape' && setOpen(false)
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
   }, [open])
 
   const go = (id) => (e) => {
@@ -61,7 +65,8 @@ export default function Nav({ path }) {
     navigate(`/#${id}`)
   }
 
-  return (
+  // Mount directly on the body so page transforms cannot move the fixed header.
+  return createPortal(
     <>
       <div className="progress" id="progress" aria-hidden="true" />
       <header className="nav">
@@ -166,6 +171,7 @@ export default function Nav({ path }) {
           </div>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   )
 }
