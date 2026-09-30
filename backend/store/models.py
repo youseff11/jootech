@@ -120,3 +120,34 @@ class ContactMessage(models.Model):
 
     def __str__(self):
         return f"رسالة من: {self.name} - {self.subject if self.subject else 'بدون موضوع'}"
+
+class SiteSettings(models.Model):
+    """إعدادات عامة للموقع (سجل واحد فقط) — حالياً الصورة الشخصية في أول الصفحة."""
+    hero_image = models.ImageField(upload_to='site/', blank=True, null=True, verbose_name="الصورة الشخصية")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "إعدادات الموقع"
+        verbose_name_plural = "إعدادات الموقع"
+
+    def __str__(self):
+        return "إعدادات الموقع"
+
+    @classmethod
+    def load(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # singleton
+        # ضغط الصورة الجديدة لـ WebP (مع الحفاظ على الشفافية) قبل رفعها
+        try:
+            if self.hero_image and not self.hero_image._committed and not self.hero_image.name.lower().endswith('.webp'):
+                original_size = getattr(self.hero_image, 'size', None)
+                compressed = compress_image_to_webp(self.hero_image, max_dim=1400, quality=88)
+                if compressed is not None and (original_size is None or compressed.size < original_size):
+                    base_name = os.path.splitext(os.path.basename(self.hero_image.name))[0]
+                    self.hero_image.save(base_name + '.webp', compressed, save=False)
+        except Exception:
+            pass
+        super().save(*args, **kwargs)

@@ -7,7 +7,7 @@ import json
 
 from adminsortable2.admin import SortableAdminMixin, SortableInlineAdminMixin
 
-from .models import Project, ProjectParagraph, ProjectImage, ContactMessage
+from .models import Project, ProjectParagraph, ProjectImage, ContactMessage, SiteSettings
 from .ai import ai_process
 
 
@@ -175,3 +175,11 @@ class ContactMessageAdmin(admin.ModelAdmin):
     list_filter = ('is_read', 'created_at')
     search_fields = ('name', 'email', 'message')
     readonly_fields = ('created_at',)
+
+
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'updated_at')
+
+    def has_add_permission(self, request):
+        return not SiteSettings.objects.exists()

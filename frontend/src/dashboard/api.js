@@ -21,8 +21,18 @@ export function setToken(token) {
   } catch {
     /* storage blocked — session will just not persist */
   }
+  if (!token) memo.clear()
   window.dispatchEvent(new Event(AUTH_EVENT))
 }
+
+/* ── in-memory cache: pages render instantly on revisit, then refresh in background ── */
+const memo = new Map()
+export const peek = (key) => memo.get(key)
+export const remember = (key, value) => {
+  memo.set(key, value)
+  return value
+}
+export const forget = (...keys) => keys.forEach((k) => memo.delete(k))
 
 export class ApiError extends Error {
   constructor(message, status, fields = {}) {
@@ -38,22 +48,36 @@ async function request(path, { method = 'GET', body, form } = {}) {
   if (token) headers.Authorization = `Bearer ${token}`
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
+  // never spin forever: give up after 30s with a clear message
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), 30000)
   let res
   try {
     res = await fetch(`${BASE}${path}`, {
       method,
       headers,
       body: form || (body !== undefined ? JSON.stringify(body) : undefined),
+      signal: ctrl.signal,
     })
-  } catch {
-    throw new ApiError('تعذر الاتصال بالسيرفر — تأكد من الإنترنت.', 0)
+  } catch (e) {
+    clearTimeout(timer)
+    throw new ApiError(
+      e.name === 'AbortError' ? 'السيرفر اتأخر في الرد — جرّب تاني.' : 'تعذر الاتصال بالسيرفر — تأكد إن الباك إند شغال.',
+      0,
+    )
   }
 
-  let data = {}
+  let data = null
   try {
     data = await res.json()
   } catch {
     /* empty / non-JSON */
+  } finally {
+    clearTimeout(timer)
+  }
+  if (data === null) {
+    if (res.ok) throw new ApiError('رد غير متوقع من السيرفر — تأكد إن الـ API شغال على /api.', res.status)
+    data = {}
   }
   if (res.status === 401 && path !== '/login/') {
     setToken('')
@@ -67,7 +91,7 @@ async function request(path, { method = 'GET', body, form } = {}) {
 }
 
 /** Multipart upload with progress (fetch has no upload progress). */
-function upload(path, file, onProgress) {
+function upload(path, file, onProgress, field = 'images') {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `${BASE}${path}`)
@@ -87,7 +111,7 @@ function upload(path, file, onProgress) {
     }
     xhr.onerror = () => reject(new ApiError('تعذر رفع الصورة — تأكد من الإنترنت.', 0))
     const form = new FormData()
-    form.append('images', file, file.name)
+    form.append(field, file, file.name)
     xhr.send(form)
   })
 }
@@ -114,6 +138,10 @@ export const dash = {
   updateMessage: (id, data) => request(`/messages/${id}/`, { method: 'PATCH', body: data }),
   deleteMessage: (id) => request(`/messages/${id}/`, { method: 'DELETE' }),
   readAll: () => request('/messages/read-all/', { method: 'POST', body: {} }),
+
+  hero: () => request('/settings/hero/'),
+  uploadHero: (file, onProgress) => upload('/settings/hero/', file, onProgress, 'image'),
+  deleteHero: () => request('/settings/hero/', { method: 'DELETE' }),
 
   ai: (mode, text) => request('/ai/', { method: 'POST', body: { mode, text } }),
 }

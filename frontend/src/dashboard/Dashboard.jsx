@@ -10,12 +10,14 @@ import Overview from './Overview'
 import Projects from './Projects'
 import ProjectEditor from './ProjectEditor'
 import Messages from './Messages'
+import Settings from './Settings'
 import './dashboard.css'
 
 const NAV = [
   { to: '/dashboard', icon: 'home', label: 'الرئيسية', match: (p) => p === '/dashboard' || p === '/dashboard/' },
   { to: '/dashboard/projects', icon: 'folder', label: 'المشاريع', match: (p) => p.startsWith('/dashboard/projects') },
   { to: '/dashboard/messages', icon: 'inbox', label: 'الرسائل', match: (p) => p.startsWith('/dashboard/messages'), badge: true },
+  { to: '/dashboard/settings', icon: 'user', label: 'صورتي', match: (p) => p.startsWith('/dashboard/settings') },
 ]
 
 function useDashHead() {
@@ -50,6 +52,7 @@ function route(path) {
   if ((m = p.match(/^\/dashboard\/projects\/(\d+)$/))) return { view: 'editor', id: Number(m[1]) }
   if (p === '/dashboard/messages') return { view: 'messages', id: null }
   if ((m = p.match(/^\/dashboard\/messages\/(\d+)$/))) return { view: 'messages', id: Number(m[1]) }
+  if (p === '/dashboard/settings') return { view: 'settings' }
   return { view: 'overview' }
 }
 
@@ -142,6 +145,7 @@ function Shell({ path, user, onLogout }) {
         {r.view === 'projects' && <Projects />}
         {r.view === 'editor' && <ProjectEditor key={r.id ?? 'new'} id={r.id} />}
         {r.view === 'messages' && <Messages id={r.id} onUnreadChange={setUnread} />}
+        {r.view === 'settings' && <Settings />}
       </main>
 
       <nav className="d-tabbar" aria-label="القائمة">

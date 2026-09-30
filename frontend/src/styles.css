@@ -229,9 +229,12 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
   transform: perspective(1000px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
   transition: transform 0.5s var(--ease);
   animation: pop 1.1s 0.2s var(--ease) both;
+  user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent;
 }
 @keyframes pop { from { opacity: 0; transform: scale(0.94) translateY(20px); } to { opacity: 1; transform: none; } }
-.portrait picture, .portrait > picture img { position: relative; z-index: 2; width: 100%; height: 100%; }
+.portrait picture, .portrait > picture img, .portrait > img { position: relative; z-index: 2; width: 100%; height: 100%; }
+.portrait__photo { animation: photo-in 0.7s var(--ease) both; }
+@keyframes photo-in { from { opacity: 0; transform: scale(0.97); } }
 .portrait img {
   object-fit: cover; border-radius: 28px;
   mask-image: radial-gradient(ellipse 60% 62% at 50% 45%, #000 58%, transparent 100%);

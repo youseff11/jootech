@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from '../lib/router'
 import Icon from '../components/Icon'
-import { dash } from './api'
+import { dash, peek, remember } from './api'
 import { Empty, Spinner, Status, Thumb, fmtDate, fmtNum, timeAgo } from './ui'
 
 function StatTile({ icon, label, value, sub, tone, to }) {
@@ -95,15 +95,17 @@ function DailyChart({ data }) {
 }
 
 export default function Overview({ user }) {
-  const [data, setData] = useState(null)
+  const [data, setData] = useState(() => peek('stats') || null)
   const [error, setError] = useState('')
 
-  useEffect(() => {
+  const load = () => {
+    setError('')
     dash
       .stats()
-      .then(setData)
+      .then((d) => setData(remember('stats', d)))
       .catch((e) => setError(e.message))
-  }, [])
+  }
+  useEffect(load, [])
 
   const greeting = useMemo(() => {
     const h = new Date().getHours()
@@ -135,7 +137,14 @@ export default function Overview({ user }) {
         </div>
       </header>
 
-      {error && <p className="d-alert">{error}</p>}
+      {error && !data && (
+        <p className="d-alert d-alert--retry">
+          {error}
+          <button className="d-link" onClick={load}>
+            حاول تاني
+          </button>
+        </p>
+      )}
       {!data && !error && (
         <div className="d-center d-center--block">
           <Spinner size={26} />

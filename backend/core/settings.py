@@ -62,6 +62,9 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+if DEBUG:
+    MIDDLEWARE.append("store.middleware.ApiTimingMiddleware")
+
 ROOT_URLCONF = "core.urls"
 
 TEMPLATES = [

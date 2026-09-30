@@ -31,3 +31,28 @@ class ApiCorsMiddleware:
             response["Access-Control-Max-Age"] = "86400"
             response["Vary"] = "Origin"
         return response
+
+
+class ApiTimingMiddleware:
+    """DEBUG only: prints how long each /api request took and how many DB queries it ran.
+    Helps spot slow requests while developing (e.g. far-away database latency)."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        if not request.path.startswith("/api/"):
+            return self.get_response(request)
+        import time
+
+        from django.db import connection
+
+        start = time.perf_counter()
+        before = len(connection.queries)
+        response = self.get_response(request)
+        took = time.perf_counter() - start
+        queries = len(connection.queries) - before
+        db_time = sum(float(q.get("time", 0)) for q in connection.queries[before:])
+        print(f"[api] {request.method} {request.path} -> {response.status_code} in {took:.2f}s "
+              f"(db: {queries} queries, {db_time:.2f}s)")
+        return response

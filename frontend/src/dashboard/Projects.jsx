@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, navigate } from '../lib/router'
 import Icon from '../components/Icon'
-import { dash } from './api'
+import { dash, forget, peek, remember } from './api'
 import { Empty, Spinner, Status, Switch, Thumb, fmtDate, useConfirm, useToast } from './ui'
 
 const FILTERS = [
@@ -11,7 +11,7 @@ const FILTERS = [
 ]
 
 export default function Projects() {
-  const [items, setItems] = useState(null)
+  const [items, setItems] = useState(() => peek('projects') || null)
   const [error, setError] = useState('')
   const [q, setQ] = useState('')
   const [filter, setFilter] = useState('all')
@@ -21,12 +21,21 @@ export default function Projects() {
   const toast = useToast()
   const confirm = useConfirm()
 
-  useEffect(() => {
+  const load = () => {
+    setError('')
     dash
       .projects()
       .then((d) => setItems(d.projects))
       .catch((e) => setError(e.message))
-  }, [])
+  }
+  useEffect(load, [])
+  // keep the shared cache in sync with every local change (publish, reorder, delete…)
+  useEffect(() => {
+    if (items) {
+      remember('projects', items)
+      forget('stats')
+    }
+  }, [items])
 
   const shown = useMemo(() => {
     if (!items) return []
@@ -155,7 +164,14 @@ export default function Projects() {
         </div>
       </div>
 
-      {error && <p className="d-alert">{error}</p>}
+      {error && !items && (
+        <p className="d-alert d-alert--retry">
+          {error}
+          <button className="d-link" onClick={load}>
+            حاول تاني
+          </button>
+        </p>
+      )}
       {!items && !error && (
         <div className="d-center d-center--block">
           <Spinner size={26} />

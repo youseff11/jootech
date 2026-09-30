@@ -16,5 +16,6 @@ urlpatterns = [
     re_path(r"^messages/?$", d.messages),
     re_path(r"^messages/read-all/?$", d.messages_read_all),
     re_path(r"^messages/(?P<pk>\d+)/?$", d.message_detail),
+    re_path(r"^settings/hero/?$", d.hero),
     re_path(r"^ai/?$", d.ai),
 ]

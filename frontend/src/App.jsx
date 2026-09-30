@@ -53,7 +53,7 @@ function Site({ path }) {
         </Suspense>
       ) : (
         <main>
-          <Hero projectCount={data.data?.count ?? data.projects.length} />
+          <Hero projectCount={data.data?.count ?? data.projects.length} hero={data.data?.site?.hero} ready={!!data.data || !!data.error} />
           <Marquee />
           <Work {...data} />
           <Services />

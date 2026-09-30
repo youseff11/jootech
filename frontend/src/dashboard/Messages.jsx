@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { navigate } from '../lib/router'
 import Icon from '../components/Icon'
-import { dash } from './api'
+import { dash, peek, remember } from './api'
 import { Empty, Spinner, fmtDateTime, timeAgo, useConfirm, useToast } from './ui'
 
 const TABS = [
@@ -78,9 +78,10 @@ export default function Messages({ id, onUnreadChange }) {
   const [tab, setTab] = useState('all')
   const [q, setQ] = useState('')
   const [query, setQuery] = useState('')
-  const [list, setList] = useState([])
-  const [meta, setMeta] = useState({ page: 1, pages: 1, count: 0, unread: 0 })
-  const [loading, setLoading] = useState(true)
+  const first = peek('msgs:all:')
+  const [list, setList] = useState(first?.list || [])
+  const [meta, setMeta] = useState(first?.meta || { page: 1, pages: 1, count: 0, unread: 0 })
+  const [loading, setLoading] = useState(!first)
   const [more, setMore] = useState(false)
   const [error, setError] = useState('')
   const [current, setCurrent] = useState(null)
@@ -97,12 +98,20 @@ export default function Messages({ id, onUnreadChange }) {
   const load = useCallback(
     async (page = 1) => {
       const my = ++reqId.current
-      page === 1 ? setLoading(true) : setMore(true)
+      const key = `msgs:${tab}:${query}`
+      const hit = page === 1 && peek(key)
+      if (hit) {
+        setList(hit.list)
+        setMeta(hit.meta)
+      }
+      page === 1 ? setLoading(!hit) : setMore(true)
       try {
         const d = await dash.messages({ status: tab, q: query, page })
         if (my !== reqId.current) return
         setList((l) => (page === 1 ? d.results : [...l, ...d.results]))
-        setMeta({ page: d.page, pages: d.pages, count: d.count, unread: d.unread })
+        const m = { page: d.page, pages: d.pages, count: d.count, unread: d.unread }
+        setMeta(m)
+        if (page === 1) remember(key, { list: d.results, meta: m })
         onUnreadChange?.(d.unread)
         setError('')
       } catch (e) {

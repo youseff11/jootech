@@ -24,8 +24,8 @@ from django.utils.crypto import salted_hmac
 from django.views.decorators.csrf import csrf_exempt
 
 from .ai import ai_process
-from .api import PROJECTS_CACHE_KEY, _client_ip, _image, _json, _safe_url, _split_tech
-from .models import ContactMessage, Project, ProjectImage, ProjectParagraph
+from .api import PROJECTS_CACHE_KEY, _client_ip, _image, _json, _safe_url, _split_tech, hero_payload
+from .models import ContactMessage, Project, ProjectImage, ProjectParagraph, SiteSettings
 
 log = logging.getLogger(__name__)
 User = get_user_model()
@@ -467,6 +467,55 @@ def messages_read_all(request):
         return _method_not_allowed()
     n = ContactMessage.objects.filter(is_read=False).update(is_read=True)
     return _json({"ok": True, "updated": n})
+
+
+# ───────────────────────── site settings: profile photo ─────────────────────────
+@staff_required
+def hero(request):
+    try:
+        obj = SiteSettings.load()
+    except Exception:
+        log.exception("SiteSettings unavailable")
+        return _json({"error": "لازم تشغّل python manage.py migrate الأول عشان تقدر تغيّر الصورة."}, status=500)
+
+    if request.method == "GET":
+        return _json({"hero": hero_payload(obj)})
+
+    if request.method == "POST":
+        f = request.FILES.get("image")
+        if not f:
+            return _json({"error": "اختار صورة."}, status=400)
+        if not (getattr(f, "content_type", "") or "").startswith("image/"):
+            return _json({"error": "الملف ده مش صورة."}, status=400)
+        if f.size > MAX_UPLOAD_BYTES:
+            return _json({"error": "الصورة أكبر من 10MB."}, status=400)
+        old = obj.hero_image.name if obj.hero_image else ""
+        try:
+            obj.hero_image = f
+            obj.save()
+        except Exception:
+            log.exception("Hero upload failed")
+            return _json({"error": "فشل رفع الصورة — تأكد من إعدادات Cloudinary."}, status=500)
+        if old and old != obj.hero_image.name:
+            try:
+                obj.hero_image.storage.delete(old)
+            except Exception:
+                log.warning("Could not delete old hero image")
+        _bust_public_cache()
+        return _json({"hero": hero_payload(obj)})
+
+    if request.method == "DELETE":
+        if obj.hero_image:
+            try:
+                obj.hero_image.delete(save=False)
+            except Exception:
+                log.warning("Could not delete hero image file")
+            obj.hero_image = None
+            obj.save()
+        _bust_public_cache()
+        return _json({"hero": None})
+
+    return _method_not_allowed()
 
 
 # ───────────────────────── AI helper ─────────────────────────

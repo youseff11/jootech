@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, navigate } from '../lib/router'
 import Icon from '../components/Icon'
-import { compressImage, dash } from './api'
+import { compressImage, dash, forget, peek, remember } from './api'
 import { Spinner, Switch, fmtDateTime, useConfirm, useToast } from './ui'
 
 const EMPTY = {
@@ -279,13 +279,29 @@ function Images({ projectId, images, setImages }) {
 }
 
 /* ───────── editor ───────── */
+/** keep the cached projects list in sync so the list page is instant & correct */
+function syncList(project, { remove = false, add = false } = {}) {
+  const list = peek('projects')
+  forget('stats')
+  if (!list) return
+  if (remove) return remember('projects', list.filter((p) => p.id !== project.id))
+  if (add) return remember('projects', [project, ...list])
+  remember('projects', list.map((p) => (p.id === project.id ? { ...p, ...project } : p)))
+}
+
 export default function ProjectEditor({ id }) {
   const isNew = !id
-  const [form, setForm] = useState(EMPTY)
-  const [saved, setSaved] = useState(JSON.stringify(EMPTY))
-  const [meta, setMeta] = useState(null)
-  const [images, setImages] = useState([])
-  const [loading, setLoading] = useState(!isNew)
+  // render instantly from the cached list, then refresh from the server
+  const cached = !isNew ? (peek('projects') || []).find((p) => p.id === id) : null
+  const [form, setForm] = useState(() => (cached ? fromProject(cached) : EMPTY))
+  const [saved, setSaved] = useState(() => JSON.stringify(cached ? fromProject(cached) : EMPTY))
+  const [meta, setMeta] = useState(cached || null)
+  const [images, setImages] = useState(cached?.images || [])
+  const [loading, setLoading] = useState(!isNew && !cached)
+  const formRef = useRef(form)
+  const savedRef = useRef(saved)
+  formRef.current = form
+  savedRef.current = saved
   const [error, setError] = useState('')
   const [errors, setErrors] = useState({})
   const [saving, setSaving] = useState(false)
@@ -301,16 +317,25 @@ export default function ProjectEditor({ id }) {
       .project(id)
       .then(({ project }) => {
         const f = fromProject(project)
-        setForm(f)
-        setSaved(JSON.stringify(f))
+        // don't overwrite anything the user already started typing
+        if (JSON.stringify(formRef.current) === savedRef.current) {
+          setForm(f)
+          setSaved(JSON.stringify(f))
+        }
         setMeta(project)
         setImages(project.images)
+        syncList(project)
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => !cached && setError(e.message))
       .finally(() => setLoading(false))
   }, [id, isNew])
 
   const dirty = useMemo(() => JSON.stringify(form) !== saved, [form, saved])
+
+  useEffect(() => {
+    if (!isNew && meta) syncList({ id, images, cover: images[0] || null })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images])
 
   useEffect(() => {
     if (!dirty) return
@@ -342,10 +367,12 @@ export default function ProjectEditor({ id }) {
       if (isNew) {
         const { project } = await dash.createProject(form)
         setSaved(JSON.stringify(form))
+        syncList(project, { add: true })
         toast('المشروع اتضاف — ضيف الصور دلوقتي')
         navigate(`/dashboard/projects/${project.id}`, { replace: true })
       } else {
         const { project } = await dash.updateProject(id, form)
+        syncList(project)
         const f = fromProject(project)
         setForm(f)
         setSaved(JSON.stringify(f))
@@ -382,6 +409,7 @@ export default function ProjectEditor({ id }) {
     if (!ok) return
     try {
       await dash.deleteProject(id)
+      syncList({ id }, { remove: true })
       setSaved(JSON.stringify(form))
       toast('المشروع اتحذف')
       navigate('/dashboard/projects', { replace: true })

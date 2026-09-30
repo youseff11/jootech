@@ -16,7 +16,7 @@ from django.utils.html import escape
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_http_methods
 
-from .models import ContactMessage, Project, ProjectImage, ProjectParagraph
+from .models import ContactMessage, Project, ProjectImage, ProjectParagraph, SiteSettings
 from .templatetags.media_extras import cld, cld_srcset
 
 log = logging.getLogger(__name__)
@@ -77,6 +77,24 @@ def serialize_project(p):
     }
 
 
+def hero_payload(settings_obj=None):
+    """Custom profile photo (or None → the frontend uses its built-in photo)."""
+    try:
+        obj = settings_obj or SiteSettings.objects.filter(pk=1).first()
+    except Exception:  # table not migrated yet → keep the site working
+        log.warning("SiteSettings table missing — run `python manage.py migrate`")
+        return None
+    url = _safe_url(obj.hero_image) if obj and obj.hero_image else ""
+    if not url:
+        return None
+    return {
+        "src": cld(url, "f_auto,q_auto,w_720"),
+        "srcset": cld_srcset(url, "480,720,960"),
+        "full": cld(url, "f_auto,q_auto,w_1400"),
+        "updated_at": obj.updated_at.isoformat() if obj.updated_at else None,
+    }
+
+
 def _projects_payload():
     payload = cache.get(PROJECTS_CACHE_KEY)
     if payload is None:
@@ -86,7 +104,7 @@ def _projects_payload():
             .order_by("order", "-created_at")
         )
         projects = [serialize_project(p) for p in qs]
-        payload = {"count": len(projects), "projects": projects}
+        payload = {"count": len(projects), "projects": projects, "site": {"hero": hero_payload()}}
         cache.set(PROJECTS_CACHE_KEY, payload, settings.API_CACHE_SECONDS)
     return payload
 
@@ -94,6 +112,7 @@ def _projects_payload():
 @receiver([post_save, post_delete], sender=Project)
 @receiver([post_save, post_delete], sender=ProjectImage)
 @receiver([post_save, post_delete], sender=ProjectParagraph)
+@receiver([post_save, post_delete], sender=SiteSettings)
 def _bust_cache(**_kwargs):
     cache.delete(PROJECTS_CACHE_KEY)
 
