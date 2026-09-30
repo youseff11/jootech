@@ -18,36 +18,8 @@ export default function Nav({ path }) {
   const [active, setActive] = useState('')
   const isAdmin = useIsAdmin()
 
-  useEffect(() => {
-    let raf = 0
-    const bar = document.getElementById('progress')
-    const onScroll = () => {
-      cancelAnimationFrame(raf)
-      raf = requestAnimationFrame(() => {
-        const y = window.scrollY
-        const max = document.documentElement.scrollHeight - innerHeight
-        if (bar) bar.style.transform = `scaleX(${max > 0 ? y / max : 0})`
-      })
-    }
-    onScroll()
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => {
-      cancelAnimationFrame(raf)
-      window.removeEventListener('scroll', onScroll)
-    }
-  }, [])
-
-  // highlight the section currently in view (home page only)
-  useEffect(() => {
-    if (path !== '/') return setActive('')
-    const els = LINKS.map((l) => document.getElementById(l.id)).filter(Boolean)
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setActive(e.target.id)),
-      { rootMargin: '-45% 0px -50% 0px' },
-    )
-    els.forEach((el) => io.observe(el))
-    return () => io.disconnect()
-  }, [path])
+  // Selection changes only on navigation, never while scrolling.
+  useEffect(() => setActive(''), [path])
 
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
@@ -62,13 +34,13 @@ export default function Nav({ path }) {
   const go = (id) => (e) => {
     e.preventDefault()
     setOpen(false)
+    setActive(id)
     navigate(`/#${id}`)
   }
 
   // Mount directly on the body so page transforms cannot move the fixed header.
   return createPortal(
     <>
-      <div className="progress" id="progress" aria-hidden="true" />
       <header className="nav">
         <div className="nav__inner">
           <Link to="/" className="brand" aria-label={`${profile.brand} — home`} onClick={() => setOpen(false)}>
