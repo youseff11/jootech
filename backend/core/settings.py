@@ -92,6 +92,8 @@ if os.environ.get("DATABASE_URL"):
             conn_max_age=60,
             conn_health_checks=True,
             ssl_require=True,
+            # Neon's pooled host ("-pooler") runs PgBouncer, which can't hold server-side cursors
+            disable_server_side_cursors="-pooler" in os.environ["DATABASE_URL"],
         )
     }
 else:  # local fallback
