@@ -13,7 +13,6 @@ const LINKS = [
 ]
 
 export default function Nav({ path }) {
-  const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [active, setActive] = useState('')
   const isAdmin = useIsAdmin()
@@ -25,14 +24,16 @@ export default function Nav({ path }) {
       cancelAnimationFrame(raf)
       raf = requestAnimationFrame(() => {
         const y = window.scrollY
-        setScrolled(y > 24)
         const max = document.documentElement.scrollHeight - innerHeight
         if (bar) bar.style.transform = `scaleX(${max > 0 ? y / max : 0})`
       })
     }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('scroll', onScroll)
+    }
   }, [])
 
   // highlight the section currently in view (home page only)
@@ -63,7 +64,7 @@ export default function Nav({ path }) {
   return (
     <>
       <div className="progress" id="progress" aria-hidden="true" />
-      <header className={`nav ${scrolled ? 'is-scrolled' : ''}`}>
+      <header className="nav">
         <div className="nav__inner">
           <Link to="/" className="brand" aria-label={`${profile.brand} — home`} onClick={() => setOpen(false)}>
             <img src={logo} alt="" width="34" height="34" />

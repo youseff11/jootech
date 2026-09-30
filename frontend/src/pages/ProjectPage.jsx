@@ -131,7 +131,7 @@ function Detail({ p, index, next }) {
                 images={p.images}
                 alt={p.title}
                 eager
-                sizes="(max-width: 960px) 100vw, 680px"
+                sizes="(max-width: 720px) calc(100vw - 48px), (max-width: 1024px) 660px, 600px"
                 index={slide}
                 onIndexChange={setSlide}
                 keyboard={!open}
