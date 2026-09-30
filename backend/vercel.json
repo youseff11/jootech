@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "regions": ["iad1"],
+  "builds": [
+    { "src": "core/wsgi.py", "use": "@vercel/python", "config": { "maxLambdaSize": "15mb" } }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "core/wsgi.py",
+      "headers": { "cache-control": "public, max-age=2592000, immutable" }
+    },
+    { "src": "/(.*)", "dest": "core/wsgi.py" }
+  ]
+}

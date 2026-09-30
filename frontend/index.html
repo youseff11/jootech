@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Yousef Osama — Full-Stack Web Developer | JooTech</title>
+    <meta name="description" content="Yousef Osama (JooTech) — full-stack web developer building fast, scalable websites, dashboards and platforms with Django, React and PostgreSQL." />
+    <meta name="theme-color" content="#05060d" />
+    <meta name="color-scheme" content="dark" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Yousef Osama — Full-Stack Web Developer" />
+    <meta property="og:description" content="Fast, scalable web products built with Django, React and PostgreSQL." />
+    <meta property="og:image" content="/og.jpg" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- start fetching projects before JS even runs -->
+    <link rel="preload" href="/api/projects/" as="fetch" crossorigin="anonymous" />
+
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Unbounded:wght@500;600;700&display=swap"
+    />
+
+    <style>
+      html{background:#05060d;color:#e8ebff}body{margin:0;background:transparent}
+    </style>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        "name": "Yousef Osama",
+        "alternateName": "JooTech",
+        "jobTitle": "Full-Stack Web Developer",
+        "email": "mailto:jootech3@gmail.com",
+        "knowsAbout": ["Django", "React", "PostgreSQL", "Web Development"],
+        "sameAs": ["https://www.linkedin.com/in/yousef-osama-b92b312ab"]
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>Please enable JavaScript to view this portfolio.</noscript>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>

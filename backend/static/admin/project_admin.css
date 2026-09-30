@@ -1,0 +1,200 @@
+/* JooTech project admin — focused, readable, RTL-friendly layout */
+
+#content,
+#content-main,
+#changelist {
+    direction: rtl;
+}
+
+#changelist .results {
+    overflow-x: auto;
+    border: 1px solid #d9e1e7;
+    border-radius: 12px;
+    background: #fff;
+}
+
+#changelist .results table {
+    width: 100%;
+    min-width: 980px;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#changelist .results thead th {
+    background: #f3f7fa;
+    color: #254455;
+    font-size: 0.78rem;
+    font-weight: 700;
+    white-space: nowrap;
+    padding: 12px 10px;
+    border-bottom: 2px solid #cbd9e2;
+    text-align: right;
+}
+
+#changelist .results tbody td {
+    vertical-align: middle;
+    padding: 13px 10px;
+    border-bottom: 1px solid #edf1f4;
+    color: #2e3f49;
+    text-align: right;
+}
+
+#changelist .results tbody tr:hover {
+    background: #f7fbfd;
+}
+
+#changelist .results tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+#changelist .results td.field-get_image,
+#changelist .results th.column-get_image {
+    width: 100px;
+    text-align: center;
+}
+
+.project-admin-thumb {
+    display: block;
+    width: 86px;
+    height: 58px;
+    object-fit: cover;
+    border-radius: 9px;
+    border: 1px solid #c9d8e1;
+    box-shadow: 0 2px 8px rgba(21, 58, 78, 0.12);
+}
+
+.project-admin-empty {
+    color: #8a9aa4;
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+#changelist .results td.field-project_title,
+#changelist .results th.column-project_title {
+    min-width: 210px;
+    max-width: 280px;
+    white-space: normal;
+}
+
+.project-admin-title {
+    display: block;
+    color: #1d536d;
+    font-size: 0.95rem;
+    line-height: 1.65;
+}
+
+#changelist .results td.field-short_description,
+#changelist .results th.column-short_description {
+    min-width: 360px;
+    max-width: 580px;
+    white-space: normal;
+}
+
+.project-admin-description {
+    display: block;
+    color: #5d6d77;
+    font-size: 0.86rem;
+    line-height: 1.75;
+}
+
+#changelist .results td.field-is_published,
+#changelist .results th.column-is_published {
+    width: 80px;
+    text-align: center;
+}
+
+#changelist .results td.field-order,
+#changelist .results th.column-order {
+    width: 72px;
+    text-align: center;
+}
+
+#changelist .results td.field-created_at,
+#changelist .results th.column-created_at {
+    width: 100px;
+    white-space: nowrap;
+}
+
+#changelist .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    background: #f8fafb;
+    border: 1px solid #e0e7eb;
+    border-radius: 10px;
+}
+
+#changelist .actions label,
+#changelist .actions select,
+#changelist .actions button {
+    margin: 0;
+}
+
+#changelist-search {
+    display: none !important;
+}
+
+#changelist-search input[type='text'] {
+    min-width: 280px;
+    border-radius: 8px;
+}
+
+#content-main > .module,
+#content-main > fieldset.module {
+    border-radius: 12px;
+    overflow: hidden;
+    border-color: #dbe4e9;
+}
+
+#content-main fieldset.module h2,
+#content-main .module h2 {
+    background: #eef5f8;
+    color: #24566d;
+    font-size: 0.95rem;
+    padding: 12px 16px;
+}
+
+#content-main .form-row {
+    padding: 12px 16px;
+}
+
+#content-main .form-row label {
+    color: #385461;
+    font-weight: 700;
+}
+
+#content-main .aligned .vLargeTextField,
+#content-main .aligned input[type='text'],
+#content-main .aligned input[type='url'],
+#content-main .aligned input[type='number'],
+#content-main .aligned textarea,
+#content-main .aligned select {
+    border-radius: 8px;
+    border-color: #cbd9e1;
+}
+
+#content-main .aligned textarea:focus,
+#content-main .aligned input:focus,
+#content-main .aligned select:focus {
+    border-color: #2d8ab0;
+    box-shadow: 0 0 0 2px rgba(45, 138, 176, 0.15);
+}
+
+#content-main .collapse summary,
+#content-main fieldset.collapse h2 {
+    cursor: pointer;
+}
+
+@media (max-width: 900px) {
+    #changelist .results table {
+        min-width: 820px;
+    }
+
+    #changelist .results td.field-short_description,
+    #changelist .results th.column-short_description {
+        min-width: 280px;
+    }
+
+}
