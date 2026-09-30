@@ -347,11 +347,8 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .carousel__viewport.is-clickable { cursor: pointer; }
 .carousel--hero .carousel__viewport.is-clickable { cursor: zoom-in; }
 .carousel__track { display: flex; height: 100%; transition: transform 0.55s var(--ease); will-change: transform; }
-.carousel__slide { flex: 0 0 100%; min-width: 0; height: 100%; }
-.carousel__slide img { width: 100%; height: 100%; object-fit: cover; object-position: top center; pointer-events: none; transition: transform 0.9s var(--ease); }
-.card:hover .carousel__slide img { transform: scale(1.03); }
-.carousel__viewport::after { content: ''; position: absolute; inset: auto 0 0; height: 40%; background: linear-gradient(180deg, transparent, rgba(5, 6, 13, 0.55)); pointer-events: none; }
-.carousel--hero .carousel__viewport::after { display: none; }
+.carousel__slide { flex: 0 0 100%; min-width: 0; height: 100%; padding: 8px; }
+.carousel__slide img { width: 100%; height: 100%; object-fit: contain; object-position: center; pointer-events: none; }
 .carousel .noimg { position: absolute; inset: 0; }
 .carousel--empty { aspect-ratio: 16 / 10; position: relative; border-radius: 14px; overflow: hidden; }
 
@@ -377,7 +374,6 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .carousel__dots button::after { content: ''; position: absolute; inset: -8px -4px; }
 
 .carousel--hero .carousel__viewport { border-radius: 0 0 16px 16px; }
-.carousel--hero .carousel__slide img { object-fit: contain; }
 .carousel--hero .carousel__arrow { width: 46px; height: 46px; margin-top: -23px; opacity: 0.9; transform: none; }
 .carousel--hero .carousel__arrow--prev { left: 16px; }
 .carousel--hero .carousel__arrow--next { right: 16px; }
@@ -388,7 +384,7 @@ ul, ol { margin: 0; padding: 0; list-style: none; }
 .carousel__thumbs button { flex: 0 0 auto; width: 96px; border-radius: 10px; overflow: hidden; border: 2px solid transparent; opacity: 0.5; transition: opacity 0.25s, border-color 0.25s; }
 .carousel__thumbs button:hover { opacity: 0.85; }
 .carousel__thumbs button.is-active { opacity: 1; border-color: var(--indigo); }
-.carousel__thumbs img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top center; }
+.carousel__thumbs img { width: 100%; aspect-ratio: 16 / 10; padding: 4px; object-fit: contain; object-position: center; background: var(--bg-2); }
 
 .line { height: 12px; border-radius: 6px; width: 100%; }
 .shimmer { background: linear-gradient(90deg, rgba(255, 255, 255, 0.04) 20%, rgba(255, 255, 255, 0.09) 40%, rgba(255, 255, 255, 0.04) 60%) 0 0 / 300% 100%; animation: shimmer 1.4s linear infinite; }

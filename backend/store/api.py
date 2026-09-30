@@ -22,7 +22,6 @@ from .templatetags.media_extras import cld, cld_srcset
 log = logging.getLogger(__name__)
 
 PROJECTS_CACHE_KEY = "api:projects:v1"
-EDGE_CACHE = "public, max-age=60, s-maxage=300, stale-while-revalidate=604800"
 
 
 # ───────────────────────── helpers ─────────────────────────
@@ -96,17 +95,14 @@ def hero_payload(settings_obj=None):
 
 
 def _projects_payload():
-    payload = cache.get(PROJECTS_CACHE_KEY)
-    if payload is None:
-        qs = (
-            Project.objects.filter(is_published=True)
-            .prefetch_related("images", "paragraphs")
-            .order_by("order", "-created_at")
-        )
-        projects = [serialize_project(p) for p in qs]
-        payload = {"count": len(projects), "projects": projects, "site": {"hero": hero_payload()}}
-        cache.set(PROJECTS_CACHE_KEY, payload, settings.API_CACHE_SECONDS)
-    return payload
+    # Serverless workers cannot invalidate each other's local-memory caches.
+    qs = (
+        Project.objects.filter(is_published=True)
+        .prefetch_related("images", "paragraphs")
+        .order_by("order", "-created_at")
+    )
+    projects = [serialize_project(p) for p in qs]
+    return {"count": len(projects), "projects": projects, "site": {"hero": hero_payload()}}
 
 
 @receiver([post_save, post_delete], sender=Project)
@@ -117,9 +113,11 @@ def _bust_cache(**_kwargs):
     cache.delete(PROJECTS_CACHE_KEY)
 
 
-def _json(data, status=200, cacheable=False):
+def _json(data, status=200):
     resp = JsonResponse(data, status=status, json_dumps_params={"ensure_ascii": False})
-    resp["Cache-Control"] = EDGE_CACHE if cacheable else "no-store"
+    resp["Cache-Control"] = "no-store"
+    resp["CDN-Cache-Control"] = "no-store"
+    resp["Vercel-CDN-Cache-Control"] = "no-store"
     return resp
 
 
@@ -143,7 +141,7 @@ def health(_request):
 
 @require_GET
 def projects(_request):
-    return _json(_projects_payload(), cacheable=True)
+    return _json(_projects_payload())
 
 
 @require_GET
@@ -151,7 +149,7 @@ def project_detail(_request, pk):
     pk = int(pk)
     for p in _projects_payload()["projects"]:
         if p["id"] == pk:
-            return _json(p, cacheable=True)
+            return _json(p)
     return _json({"error": "Project not found"}, status=404)
 
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { cachedProjects, fetchProjects } from './api'
+import { cachedProjects, fetchProjects, PROJECTS_CHANGED } from './api'
 
 /** Projects from the API — renders cached data instantly, then refreshes. */
 export function useProjects() {
@@ -15,7 +15,29 @@ export function useProjects() {
       .catch((error) => setState((s) => ({ ...s, loading: false, error })))
   }
 
-  useEffect(() => load(), [])
+  useEffect(() => {
+    let mounted = true
+    const refresh = () => {
+      fetchProjects()
+        .then((data) => mounted && setState({ data, loading: false, error: null }))
+        .catch((error) => mounted && setState((s) => ({ ...s, loading: false, error })))
+    }
+    const visible = () => {
+      if (document.visibilityState === 'visible') refresh()
+    }
+    refresh()
+    window.addEventListener(PROJECTS_CHANGED, refresh)
+    window.addEventListener('focus', refresh)
+    window.addEventListener('pageshow', refresh)
+    document.addEventListener('visibilitychange', visible)
+    return () => {
+      mounted = false
+      window.removeEventListener(PROJECTS_CHANGED, refresh)
+      window.removeEventListener('focus', refresh)
+      window.removeEventListener('pageshow', refresh)
+      document.removeEventListener('visibilitychange', visible)
+    }
+  }, [])
   return { ...state, projects: state.data?.projects || [], retry: () => load(true) }
 }
 

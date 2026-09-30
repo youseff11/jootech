@@ -4,14 +4,6 @@ import defaultHero from '../assets/hero.webp'
 import { compressImage, dash, peek, remember } from './api'
 import { Spinner, fmtDateTime, useConfirm, useToast } from './ui'
 
-const clearSiteCache = () => {
-  try {
-    sessionStorage.removeItem('jt:projects:v1') // so your own browser shows the new photo right away
-  } catch {
-    /* ignore */
-  }
-}
-
 export default function Settings() {
   const [hero, setHeroState] = useState(() => peek('hero')) // undefined = loading, null = default photo
   const setHero = (h) => setHeroState(remember('hero', h))
@@ -45,8 +37,7 @@ export default function Settings() {
       const small = await compressImage(file, 1400, 0.9)
       const d = await dash.uploadHero(small, setProgress)
       setHero(d.hero)
-      clearSiteCache()
-      toast('الصورة اتغيرت — هتظهر على الموقع خلال دقايق')
+      toast('الصورة اتغيرت — هتظهر لما ترجع للموقع')
     } catch (e) {
       toast(e.message, 'err')
     } finally {
@@ -66,7 +57,6 @@ export default function Settings() {
     try {
       await dash.deleteHero()
       setHero(null)
-      clearSiteCache()
       toast('رجعت الصورة الأصلية')
     } catch (e) {
       toast(e.message, 'err')

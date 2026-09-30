@@ -1,5 +1,5 @@
 // Dashboard API client — bearer token kept in localStorage.
-import { API_BASE } from '../lib/api'
+import { API_BASE, invalidateProjects } from '../lib/api'
 
 const TOKEN_KEY = 'jt:dash:token'
 const BASE = `${API_BASE}/api/dashboard`
@@ -87,6 +87,7 @@ async function request(path, { method = 'GET', body, form } = {}) {
     const first = Object.values(fields)[0]
     throw new ApiError(data.error || first || `حصل خطأ (${res.status})`, res.status, fields)
   }
+  if (method !== 'GET' && /^\/(projects|images|settings)\//.test(path)) invalidateProjects()
   return data
 }
 
@@ -106,7 +107,10 @@ function upload(path, file, onProgress, field = 'images') {
         /* ignore */
       }
       if (xhr.status === 401) setToken('')
-      if (xhr.status >= 200 && xhr.status < 300) resolve(data)
+      if (xhr.status >= 200 && xhr.status < 300) {
+        invalidateProjects()
+        resolve(data)
+      }
       else reject(new ApiError(data.error || data.errors?.[0] || `فشل الرفع (${xhr.status})`, xhr.status))
     }
     xhr.onerror = () => reject(new ApiError('تعذر رفع الصورة — تأكد من الإنترنت.', 0))
