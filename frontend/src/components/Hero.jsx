@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { profile, highlights } from '../data/site'
 import { navigate } from '../lib/router'
 import { prefersReducedMotion, useCountUp } from '../lib/hooks'
+import { cachedHero } from '../lib/api'
 import Icon from './Icon'
 import heroAvif from '../assets/hero.avif'
 import heroWebp from '../assets/hero.webp'
@@ -22,16 +23,10 @@ function Rotator({ words }) {
   )
 }
 
-function Portrait({ hero, ready }) {
+function Portrait({ hero }) {
   const ref = useRef(null)
-  // wait (briefly) for the API so a custom photo never flashes the default one first
-  const [timedOut, setTimedOut] = useState(false)
-  useEffect(() => {
-    if (ready) return
-    const t = setTimeout(() => setTimedOut(true), 1500)
-    return () => clearTimeout(t)
-  }, [ready])
-  const decided = ready || timedOut
+  // Start loading immediately; refresh a remembered admin photo when the API responds.
+  const shown = hero === undefined ? cachedHero() : hero
   // secret entrance: 3 quick clicks / taps on the photo → dashboard login
   const taps = useRef({ n: 0, last: 0 })
   const onSecretTap = () => {
@@ -66,18 +61,18 @@ function Portrait({ hero, ready }) {
       <div className="portrait__ring" aria-hidden="true" />
       <div className="portrait__ring portrait__ring--2" aria-hidden="true" />
       <div className="portrait__clip">
-        {decided &&
-        (hero?.src ? (
+        {shown?.src ? (
           <img
-            key={hero.src}
+            key={shown.src}
             className="portrait__photo"
-            src={hero.src}
-            srcSet={hero.srcset || undefined}
+            src={shown.src}
+            srcSet={shown.srcset || undefined}
             sizes="(max-width: 860px) 78vw, 460px"
             alt={`${profile.name} — ${profile.role}`}
             width="527"
             height="582"
             fetchPriority="high"
+            loading="eager"
             decoding="async"
           />
         ) : (
@@ -85,7 +80,7 @@ function Portrait({ hero, ready }) {
             <source srcSet={heroAvif} type="image/avif" />
             <img src={heroWebp} alt={`${profile.name} — ${profile.role}`} width="527" height="582" fetchPriority="high" decoding="async" />
           </picture>
-        ))}
+        )}
       </div>
       <span className="chip-float chip-float--a">
         <Icon name="code" size={16} /> Django
@@ -110,7 +105,7 @@ function Stat({ value, label }) {
   )
 }
 
-export default function Hero({ projectCount, hero, ready }) {
+export default function Hero({ projectCount, hero }) {
   const to = (id) => (e) => {
     e.preventDefault()
     navigate(`/#${id}`)
@@ -153,7 +148,7 @@ export default function Hero({ projectCount, hero, ready }) {
           </div>
         </div>
 
-        <Portrait hero={hero} ready={ready} />
+        <Portrait hero={hero} />
       </div>
 
       <a href="/#work" onClick={to('work')} className="scroll-cue" aria-label="Scroll to projects">

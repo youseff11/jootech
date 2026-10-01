@@ -1,5 +1,5 @@
 // Dashboard API client — bearer token kept in localStorage.
-import { API_BASE, invalidateProjects } from '../lib/api'
+import { API_BASE, invalidateProjects, rememberHero } from '../lib/api'
 
 const TOKEN_KEY = 'jt:dash:token'
 const BASE = `${API_BASE}/api/dashboard`
@@ -87,6 +87,8 @@ async function request(path, { method = 'GET', body, form } = {}) {
     const first = Object.values(fields)[0]
     throw new ApiError(data.error || first || `حصل خطأ (${res.status})`, res.status, fields)
   }
+  if (path === '/settings/hero/' && Object.hasOwn(data, 'hero')) rememberHero(data.hero)
+  if (method === 'DELETE' && path === '/settings/hero/') rememberHero(null)
   if (method !== 'GET' && /^\/(projects|images|settings)\//.test(path)) invalidateProjects()
   return data
 }
@@ -108,6 +110,7 @@ function upload(path, file, onProgress, field = 'images') {
       }
       if (xhr.status === 401) setToken('')
       if (xhr.status >= 200 && xhr.status < 300) {
+        if (path === '/settings/hero/' && Object.hasOwn(data, 'hero')) rememberHero(data.hero)
         invalidateProjects()
         resolve(data)
       }

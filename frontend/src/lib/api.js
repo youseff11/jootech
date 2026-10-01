@@ -4,9 +4,27 @@ export const API_BASE = (env.VITE_API_URL || '').replace(/\/$/, '')
 
 const CACHE_KEY = 'jt:projects:v2'
 const CHANGE_KEY = 'jt:projects:changed'
+const HERO_KEY = 'jt:hero:v1'
 export const PROJECTS_CHANGED = 'projects:changed'
 let inflight = null
 let revision = 0
+
+export function cachedHero() {
+  try {
+    const hero = JSON.parse(localStorage.getItem(HERO_KEY) || 'null')
+    return hero?.src && typeof hero.src === 'string' ? hero : null
+  } catch {
+    return null
+  }
+}
+
+export function rememberHero(hero) {
+  try {
+    localStorage.setItem(HERO_KEY, JSON.stringify(hero || null))
+  } catch {
+    /* storage unavailable */
+  }
+}
 
 export function invalidateProjects(broadcast = true) {
   revision += 1
@@ -36,6 +54,7 @@ function readCache() {
 }
 
 function writeCache(data) {
+  if (data.site && Object.hasOwn(data.site, 'hero')) rememberHero(data.site.hero)
   try {
     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), data }))
   } catch {

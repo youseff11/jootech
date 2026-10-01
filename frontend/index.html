@@ -30,8 +30,8 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-    <!-- start fetching projects before JS even runs -->
-    <link rel="preload" href="/api/projects/" as="fetch" crossorigin="anonymous" />
+    <!-- Make the built-in portrait available before React starts. -->
+    <link rel="preload" href="/src/assets/hero.avif" as="image" type="image/avif" />
 
     <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
